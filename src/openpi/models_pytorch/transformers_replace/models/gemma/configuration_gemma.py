@@ -24,6 +24,11 @@ from ...configuration_utils import PretrainedConfig
 
 
 class GemmaConfig(PretrainedConfig):
+    # openpi bridge shim: 5.5.4's PaliGemmaConfig.__post_init__ reads this attr
+    # off the gemma text config; None lets it apply its default. Lives here (in
+    # the repo) so a plain `cp -r` of transformers_replace keeps the shim.
+    use_bidirectional_attention = None
+
     r"""
     This is the configuration class to store the configuration of a [`GemmaModel`]. It is used to instantiate an Gemma
     model according to the specified arguments, defining the model architecture. Instantiating a configuration with the
