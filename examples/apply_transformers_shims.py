@@ -93,6 +93,25 @@ def main() -> int:
     else:
         print("skip (already patched): configuration_gemma.py")
 
+    # 5. pad_token_id on 5.5.4's own PaliGemmaConfig: dropped in 5.5.4 (moved to
+    # tokenizer level), but the replaced 4.49-style paligemma modeling reads it
+    # with an `is not None` fallback to -1. A None class default reproduces 4.49
+    # semantics exactly. (The replaced gemma config already defines it.)
+    pali_cfg = tf / "models" / "paligemma" / "configuration_paligemma.py"
+    pali_text = pali_cfg.read_text()
+    if "PaliGemmaConfig.pad_token_id" not in pali_text:
+        pali_cfg.open("a").write(
+            "\n"
+            + MARKER
+            + "\n# 5.5.4 removed pad_token_id from the config (tokenizer-level now);\n"
+            + "# the replaced 4.49-style modeling_paligemma still reads it and\n"
+            + "# falls back to -1 when None — matching 4.49 behavior.\n"
+            + "PaliGemmaConfig.pad_token_id = None\n"
+        )
+        print("patched: paligemma pad_token_id")
+    else:
+        print("skip (already patched): paligemma pad_token_id")
+
     # 4a. factor default (plain-RoPE configs never set it). Target the unique
     # 3-line block inside _compute_linear_scaling_rope_parameters; the same
     # .get line exists in the dynamic/yarn functions, so anchor on the block.
