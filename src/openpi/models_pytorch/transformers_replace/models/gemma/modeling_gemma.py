@@ -560,7 +560,10 @@ class KwargsForCausalLM(FlashAttentionKwargs, LossKwargs): ...
 
 @auto_docstring
 class GemmaForCausalLM(GemmaPreTrainedModel, GenerationMixin):
-    _tied_weights_keys = ["lm_head.weight"]
+    # openpi bridge shim: 5.5.4 expects a dict (tied key -> source key). The
+    # 4.49 list form breaks get_expanded_tied_weights_keys. Matches 5.5.4's own
+    # gemma declaration.
+    _tied_weights_keys = {"lm_head.weight": "model.embed_tokens.weight"}
     _tp_plan = {"lm_head": "colwise_rep"}
     _pp_plan = {"lm_head": (["hidden_states"], ["logits"])}
 

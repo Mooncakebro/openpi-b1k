@@ -384,7 +384,10 @@ class PaliGemmaForConditionalGeneration(PaliGemmaPreTrainedModel, GenerationMixi
         "^multi_modal_projector": "model.multi_modal_projector",
         "^language_model.lm_head": "lm_head",
     }
-    _tied_weights_keys = ["lm_head.weight"]
+    # openpi bridge shim: 5.5.4 expects a dict (tied key -> source key). The
+    # 4.49 list form breaks get_expanded_tied_weights_keys. Matches 5.5.4's own
+    # paligemma declaration.
+    _tied_weights_keys = {"lm_head.weight": "model.language_model.embed_tokens.weight"}
 
     def __init__(self, config: PaliGemmaConfig):
         super().__init__(config)
